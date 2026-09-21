@@ -48,10 +48,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Builds every workspace package (packages/*, apps/zcode-cli) except the desktop shell,
-      # mirroring what scripts/bootstrap.mjs does after a plain install.
+      # Builds EVERY workspace package (root packages/* AND apps/zcode-cli/packages/*).
+      # build:bootstrap only covers root packages/*, which starves the agent bundle
+      # step of its @zcode/* dependencies (first CI run failed exactly there).
       - name: Build workspace packages
-        run: pnpm run build:bootstrap
+        run: pnpm -r build
       - name: Build desktop agent bundle
         run: pnpm --dir apps/zcode-cli/packages/cli run build:desktop-agent
 
