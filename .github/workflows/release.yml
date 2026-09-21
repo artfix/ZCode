@@ -34,16 +34,18 @@ jobs:
     env:
       # No signing certs on CI; electron-builder skips codesign and still produces usable installers.
       CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      # Production flavor: real product name "ZCode", no Preview/_TEST artifact suffixes.
+      ZCODE_ENV: production
     steps:
       - uses: actions/checkout@v4
 
       # Installs the exact pinned tools from mise.toml (Node 24.14.0 + pnpm 10.33.2).
       - uses: jdx/mise-action@v2
 
-      # The linux target builds an rpm, which needs rpmbuild on the runner.
+      # The linux target builds rpm (needs rpmbuild) and pacman (needs bsdtar).
       - name: Install Linux build dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y rpm
+        run: sudo apt-get update && sudo apt-get install -y rpm libarchive-tools
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -81,7 +83,7 @@ jobs:
         run: |
           mkdir -p release-assets
           find packages/desktop/dist -maxdepth 1 -type f \
-            \( -name "*.AppImage" -o -name "*.deb" -o -name "*.exe" -o -name "*.dmg" -o -name "*.zip" \) \
+            \( -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.exe" -o -name "*.dmg" -o -name "*.zip" -o -name "*.pkg.tar.zst" \) \
             -exec cp {} release-assets/ \;
           ls -la release-assets
 
