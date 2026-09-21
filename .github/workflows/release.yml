@@ -58,7 +58,23 @@ jobs:
 
       - name: Bundle ${{ matrix.target }} installers
         # The bundle script defaults to arm64, so always pass the arch explicitly.
-        run: pnpm bundle:desktop --os=${{ matrix.target }} --arch=${{ matrix.arch }}
+        shell: bash
+        run: |
+          set -o pipefail
+          pnpm bundle:desktop --os=${{ matrix.target }} --arch=${{ matrix.arch }} 2>&1 | tee bundle.log
+
+      # Job summaries are readable via the public API; job logs are not.
+      # Dumping the log tail here lets fork maintainers debug failures without auth.
+      - name: Expose bundle log tail on failure
+        if: failure()
+        shell: bash
+        run: |
+          {
+            echo "### Bundle log tail (${{ matrix.target }})"
+            echo '```'
+            tail -n 150 bundle.log || echo "(no bundle.log)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Collect artifacts
         shell: bash
