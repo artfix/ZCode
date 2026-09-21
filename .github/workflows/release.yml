@@ -1,0 +1,91 @@
+# artfix fork release automation.
+# Trigger: push a tag like v3.14.1 (must match the version in package.json),
+# or run manually via workflow_dispatch (build only, no release).
+# Each OS builds its native installer; artifacts land on the GitHub Releases page.
+
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux
+            arch: x64
+          - os: windows-latest
+            target: win
+            arch: x64
+          - os: macos-latest
+            target: mac
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    env:
+      # No signing certs on CI; electron-builder skips codesign and still produces usable installers.
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v4
+
+      # Installs the exact pinned tools from mise.toml (Node 24.14.0 + pnpm 10.33.2).
+      - uses: jdx/mise-action@v2
+
+      # The linux target builds an rpm, which needs rpmbuild on the runner.
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y rpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Builds every workspace package (packages/*, apps/zcode-cli) except the desktop shell,
+      # mirroring what scripts/bootstrap.mjs does after a plain install.
+      - name: Build workspace packages
+        run: pnpm run build:bootstrap
+      - name: Build desktop agent bundle
+        run: pnpm --dir apps/zcode-cli/packages/cli run build:desktop-agent
+
+      - name: Bundle ${{ matrix.target }} installers
+        # The bundle script defaults to arm64, so always pass the arch explicitly.
+        run: pnpm bundle:desktop --os=${{ matrix.target }} --arch=${{ matrix.arch }}
+
+      - name: Collect artifacts
+        shell: bash
+        run: |
+          mkdir -p release-assets
+          find packages/desktop/dist -maxdepth 1 -type f \
+            \( -name "*.AppImage" -o -name "*.deb" -o -name "*.exe" -o -name "*.dmg" -o -name "*.zip" \) \
+            -exec cp {} release-assets/ \;
+          ls -la release-assets
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.target }}
+          path: release-assets/*
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: release-assets/**/*
