@@ -37,10 +37,10 @@ jobs:
       # Production flavor: real product name "ZCode", no Preview/_TEST artifact suffixes.
       ZCODE_ENV: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Installs the exact pinned tools from mise.toml (Node 24.14.0 + pnpm 10.33.2).
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v4
 
       # The linux target builds rpm (needs rpmbuild) and pacman (needs bsdtar).
       - name: Install Linux build dependencies
