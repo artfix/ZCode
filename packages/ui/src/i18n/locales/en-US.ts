@@ -1817,6 +1817,12 @@ const enUS: Record<string, string> = {
   "settings.nativeSearchEnhancementsDescription":
     "Use enhanced Find and Grep in new sessions and sessions restored after an app restart. Active sessions keep their current setting; Find remains unchanged on Windows.",
   "settings.memory": "Memory",
+  "settings.toolAccess.title": "Tool Access",
+  "settings.toolAccess.note":
+    "Checked = available in sessions; unchecked = hidden from the model. Changes apply to new sessions.",
+  "settings.toolAccess.loading": "Loading tool list…",
+  "settings.toolAccess.empty": "No tools found yet — run a session first.",
+  "settings.toolAccess.group.builtIn": "Built-in tools",
   "settings.memory.workspaceMemory": "Workspace Memory",
   "settings.memoryDescription":
     "Save and reuse long-term context in workspaces. Applies to new sessions and may increase model requests and token costs.",

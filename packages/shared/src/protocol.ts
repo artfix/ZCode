@@ -237,6 +237,8 @@ export interface ResourceUsageSnapshot {
 export interface AppSettings {
   /** 当前 App/Host 不再显示提交前体验套餐推荐；不改变任何入口的模型选择。 */
   startPlanRecommendationDismissed?: boolean;
+  /** Tools hidden from the model. MCP tools use full mcp__server__tool names; built-ins use short names. */
+  toolDenylist?: string[];
   recentProjects: string[]; // 最近项目列表，最多保留 10 个
   locale: Locale; // 界面语言
   /**

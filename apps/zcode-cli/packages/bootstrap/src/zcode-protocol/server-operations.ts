@@ -1,5 +1,6 @@
 /* eslint-disable max-lines -- ZCode Protocol 的 session/workspace 方法共享同一个 server context 与 snapshot helpers，迁移期先集中维护。 */
 import { observeSessionDebug } from "./session-debug.js";
+import { readUserToolDenylist } from "./user-tool-denylist.js";
 import {
   TASK_LIST_SESSION_TYPES,
   isTaskListSessionType,
@@ -2479,7 +2480,7 @@ function buildPromptTurnToolDisallowlist(
   activeAutomationId = params.automationId,
   activeOffPeakTaskId = params.offPeakTaskId,
 ): readonly string[] | undefined {
-  const tools = new Set(params.toolDenylist ?? []);
+  const tools = new Set([...(params.toolDenylist ?? []), ...readUserToolDenylist()]);
   if (activeAutomationId) tools.add("CronCreate");
   // 闲时派发轮隐藏 OffPeakCreate（防递归自我派生）；OffPeakList 只读保留。
   // 注意 automation 轮不加 OffPeakCreate——cron 轮放行（定时派生闲时任务）。

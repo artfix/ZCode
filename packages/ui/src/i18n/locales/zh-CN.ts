@@ -1714,6 +1714,11 @@ const zhCN: Record<string, string> = {
   "settings.nativeSearchEnhancementsDescription":
     "在新建会话或应用重启后恢复的会话中使用增强 Find 和 Grep。当前会话保持现有设置；Windows 的 Find 保持不变。",
   "settings.memory": "记忆",
+  "settings.toolAccess.title": "工具开关",
+  "settings.toolAccess.note": "勾选 = 会话中可用；取消勾选 = 对模型隐藏。更改对新会话生效。",
+  "settings.toolAccess.loading": "正在读取工具列表…",
+  "settings.toolAccess.empty": "暂未发现工具——先运行一次会话再回来。",
+  "settings.toolAccess.group.builtIn": "内置工具",
   "settings.memory.workspaceMemory": "工作区记忆",
   "settings.memoryDescription":
     "在工作区中保存并复用长期上下文，新会话生效。开启后可能增加模型调用和 Token 成本。",

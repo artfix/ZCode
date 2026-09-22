@@ -418,6 +418,7 @@ function migrateLegacyWorkspaceSession(value: unknown): unknown {
 }
 
 const appSettingsObjectSchema = z.object({
+  toolDenylist: z.array(z.string()).optional(),
   recentProjects: z.array(z.string()).default([]),
   locale: localeSchema.default("zh-CN"),
   // 快捷键用户覆盖（语义校验在 ui/src/shortcuts 生效表阶段容错，schema 只管形状）
@@ -491,6 +492,7 @@ export const appSettingsSchema = z.preprocess(
 );
 
 export const appSettingsPatchSchema = z.object({
+  toolDenylist: z.array(z.string()).optional(),
   recentProjects: z.array(z.string()).optional(),
   locale: localeSchema.optional(),
   shortcutBindings: z.record(z.string(), z.array(z.string())).optional(),
