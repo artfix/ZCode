@@ -13,7 +13,8 @@ if (requestedEnv !== "test" && requestedEnv !== "production") {
 }
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+// Windows 上 pnpm shim 名称不固定；裸 `pnpm` + 下方 shell:true 由 cmd 按 PATH 解析。
+const pnpmCommand = "pnpm";
 
 function run(command, args) {
   return new Promise((resolveRun, rejectRun) => {

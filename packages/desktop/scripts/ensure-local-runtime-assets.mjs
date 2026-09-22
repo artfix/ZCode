@@ -14,7 +14,8 @@ import { getTargetPlatform } from "./target-platform.mjs";
 const desktopRoot = resolve(import.meta.dirname, "..");
 const target = getTargetPlatform();
 const bundledToolsRoot = join(desktopRoot, "bundled-tools", target.key);
-const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+// Windows 上 pnpm shim 形态不固定（cmd/exe/mise shim）；裸 `pnpm` 交由 runCommand 的 shell:true 按 PATH 解析。
+const pnpmCommand = "pnpm";
 const nativeSearchReleasePlan = resolveNativeSearchReleasePlan({
   platform: target.os,
   arch: target.arch,

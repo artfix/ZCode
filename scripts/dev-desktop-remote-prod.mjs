@@ -45,8 +45,9 @@ export function buildDesktopRemoteProdEnv(
   };
 }
 
-export function resolvePnpmCommand(platform = process.platform) {
-  return platform === "win32" ? "pnpm.cmd" : "pnpm";
+export function resolvePnpmCommand() {
+  // Windows 上 pnpm shim 名称不固定；裸 `pnpm` + spawn 的 shell:true 由 cmd 按 PATH 解析。
+  return "pnpm";
 }
 
 export function runDesktopRemoteProdDev() {
@@ -56,6 +57,7 @@ export function runDesktopRemoteProdDev() {
     stdio: "inherit",
     env: buildDesktopRemoteProdEnv(),
     windowsHide: true,
+    shell: process.platform === "win32",
   });
 
   child.on("close", (code, signal) => {

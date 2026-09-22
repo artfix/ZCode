@@ -50,7 +50,8 @@ const releaseDir = join(mockCdnDir, "releases", version);
 const nodeVersion = "v22.16.0";
 const componentSchemaVersion = 1;
 const remotePlatforms = ["linux-arm64", "linux-x64", "darwin-arm64", "darwin-x64"];
-const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+// Windows 上 pnpm shim 形态不固定（cmd/exe/mise shim）；裸 `pnpm` 交由 runCommand 的 shell:true 按 PATH 解析。
+const pnpmCommand = "pnpm";
 const isBootstrapWithRemote = process.env.ZCODE_BOOTSTRAP_WITH_REMOTE === "1";
 
 /**

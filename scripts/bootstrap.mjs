@@ -48,16 +48,9 @@ function resolveUserPnpmBin() {
 }
 
 function resolvePnpmCommand() {
-  if (!withRemoteAssets) {
-    return process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-  }
-
-  const userPnpmBin = resolveUserPnpmBin();
-  if (userPnpmBin) {
-    return join(userPnpmBin, process.platform === "win32" ? "pnpm.cmd" : "pnpm");
-  }
-
-  return process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+  // Windows 上 pnpm shim 形态不固定（cmd/exe/mise shim）；统一裸 `pnpm`，
+  // 由 runCommand 的 shell:true 走 cmd 按 PATH 解析，不再猜测具体 shim 文件名。
+  return "pnpm";
 }
 
 function resolveBootstrapWithRemoteEnv(baseEnv = process.env) {

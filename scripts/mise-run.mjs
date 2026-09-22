@@ -8,9 +8,8 @@ if (!requestedCommand) {
   process.exit(1);
 }
 
-// Windows 上 pnpm 是 .cmd 文件；其他平台直接使用 pnpm 可执行入口。
-const command =
-  process.platform === "win32" && requestedCommand === "pnpm" ? "pnpm.cmd" : requestedCommand;
+// Windows 上 pnpm shim 名称不固定（cmd/exe/mise shim）；保持原始命令名，由下方 shell:true 走 cmd 按 PATH 解析。
+const command = requestedCommand;
 const child = spawn(command, args, {
   cwd: process.cwd(),
   env: withPinnedNodePath(process.env, process.execPath),
