@@ -7,6 +7,7 @@ import { type TurnBackgroundAttribution, type TurnInputIntentMetadata } from "@z
 import type { TurnAttachment } from "@zcode/core";
 import type { SendInputOptions, SendInputResult } from "../../app/types.js";
 import { runWithSessionResidencyFinalization } from "../../zcode-protocol/session-residency.js";
+import { readUserToolDenylist } from "../../zcode-protocol/user-tool-denylist.js";
 import type { V4CommandCoreHost, V4SessionRecordView } from "./types.js";
 
 interface StartPromptTurnParamsBase {
@@ -191,7 +192,7 @@ function buildTurnToolDisallowlist(
   activeAutomationId = params.automationId,
   activeOffPeakTaskId = params.offPeakTaskId,
 ): readonly string[] | undefined {
-  const tools = new Set(params.toolDisallowlist ?? []);
+  const tools = new Set([...(params.toolDisallowlist ?? []), ...readUserToolDenylist()]);
   if (activeAutomationId) {
     // automation 派发漏传身份时，后续 model step 会重新暴露 Cron 写工具。
     for (const toolName of AUTOMATION_MUTATION_TOOL_NAMES) tools.add(toolName);
