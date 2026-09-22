@@ -9,7 +9,9 @@ import { getTargetPlatform } from "./target-platform.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const desktopRoot = resolve(scriptDir, "..");
-const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+// Windows 上 runner 提供的 pnpm shim 未必叫 pnpm.cmd（可能是 exe/其它 shim 形态）。
+// 统一传裸 `pnpm`，由 spawn-command 的 shell:true 走 cmd 解析当前 shim。
+const pnpmCommand = "pnpm";
 const target = getTargetPlatform();
 const nativeSearchReleasePlan = resolveNativeSearchReleasePlan({
   platform: target.os,
