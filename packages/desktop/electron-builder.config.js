@@ -754,11 +754,10 @@ export default {
   },
   detectUpdateChannel: false,
   publish: {
-    // Fork: 更新走 artfix/ZCode 的 GitHub Releases。release workflow 会把 dist 里的
-    // latest*.yml 与 *.blockmap 连同安装包一起上传到 Release，electron-updater 的
-    // github provider 从最新 release 读取这些元数据完成检查与差分下载。
-    provider: "github",
-    owner: "artfix",
-    repo: "ZCode",
+    // Fork: 构建只负责生成 latest*.yml / *.blockmap 元数据（generic 占位即可，不发布、不要 token）。
+    // 真正的发布由 release workflow 上传到 artfix/ZCode 的 GitHub Releases；
+    // 运行时更新由 autoUpdater 的 github provider（artfix/ZCode）从最新 Release 读取。
+    provider: "generic",
+    url: "http://localhost:8081",
   },
 };
