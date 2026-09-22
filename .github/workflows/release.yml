@@ -83,7 +83,7 @@ jobs:
         run: |
           mkdir -p release-assets
           find packages/desktop/dist -maxdepth 1 -type f \
-            \( -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.exe" -o -name "*.dmg" -o -name "*.zip" -o -name "*.pkg.tar.zst" \) \
+            \( -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.exe" -o -name "*.dmg" -o -name "*.zip" -o -name "*.pkg.tar.zst" -o -name "latest*.yml" -o -name "*.blockmap" \) \
             -exec cp {} release-assets/ \;
           ls -la release-assets
 

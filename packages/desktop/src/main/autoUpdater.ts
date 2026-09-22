@@ -2,7 +2,6 @@
 import type { ISettingService } from "@zcode/services";
 import {
   DEFAULT_LOCALE,
-  DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   desktopMenuMessageIds,
   formatDesktopMenuMessage,
   getDesktopMenuMessage,
@@ -19,7 +18,6 @@ import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import pkg, { CancellationToken } from "electron-updater";
 import semver from "semver";
 import { logger } from "./logger.js";
-import { getElectronReleasePlatform, ManifestUpdateProvider } from "./manifestUpdateProvider.js";
 const { autoUpdater } = pkg;
 
 export const CHECK_FOR_UPDATE_MENU_ID = "check-for-update";
@@ -751,27 +749,29 @@ async function syncAutoUpdateCheckChannelFromSettings(
   activeAutoUpdateCheckChannel = nextChannel;
 }
 
-function applyManifestUpdateProvider(options: InitAutoUpdaterOptions): void {
-  const manifestUrl = options.updateFeedSource?.url.trim();
+function applyForkUpdateFeedProvider(options: InitAutoUpdaterOptions): void {
+  // Fork 更新源 = artfix/ZCode 的 GitHub Releases。electron-updater 的 github provider
+  // 会从最新 release 读取 latest*.yml（由 release workflow 上传）并下载对应安装包，
+  // 不再查询 Z.ai 的 manifest 服务，也不会被其 force-update 策略影响。
+  // ZCODE_UPDATE_FEED_URL / --zcode-update-feed-url 覆盖保留为 generic feed 联调通道
+  // （指向含 latest*.yml 的静态目录）；打包版按原有逻辑忽略该覆盖。
+  const feedOverride = options.updateFeedSource?.url.trim();
+  if (feedOverride) {
+    autoUpdater.setFeedURL({
+      provider: "generic",
+      url: feedOverride,
+    });
+    logger.info(
+      `[auto-update] generic feed override applied url=${redactUpdateFeedUrlForLog(feedOverride)}`,
+    );
+    return;
+  }
   autoUpdater.setFeedURL({
-    provider: "custom",
-    updateProvider: ManifestUpdateProvider,
-    endpointOrigin: DEFAULT_ZCODE_ENDPOINT_ORIGIN,
-    ...(manifestUrl ? { manifestUrl } : {}),
-    releasePlatform: getElectronReleasePlatform(),
-    deviceMid: options.deviceMid,
-    resolveEndpointOrigin:
-      options.resolveEndpointOrigin ?? (() => resolveRuntimeZCodeEndpointOrigin(process.env)),
-    resolveReleaseChannel: async () => {
-      availableUpdateChannel = await resolveUpdateReleaseChannel(options.settingService);
-      return availableUpdateChannel;
-    },
+    provider: "github",
+    owner: "artfix",
+    repo: "ZCode",
   });
-  logger.info(
-    manifestUrl
-      ? `[auto-update] service manifest provider applied platform=${getElectronReleasePlatform()} manifestUrl=${redactUpdateFeedUrlForLog(manifestUrl)}`
-      : `[auto-update] service manifest provider applied platform=${getElectronReleasePlatform()}`,
-  );
+  logger.info("[auto-update] github provider applied owner=artfix repo=ZCode");
 }
 
 function pickFallbackReleaseNotesMarkdown(
@@ -1504,7 +1504,7 @@ export async function initAutoUpdater(options: InitAutoUpdaterOptions = {}): Pro
   // 这里仅在 Windows 关闭“退出即自动安装”，要求用户显式点更新；其他平台保持原有行为，避免改动既有升级链路。
   autoUpdater.autoInstallOnAppQuit = process.platform !== "win32";
   autoUpdater.logger = logger;
-  applyManifestUpdateProvider(options);
+  applyForkUpdateFeedProvider(options);
 
   const triggerCheckForUpdates = (reason: string) => {
     if (checkForUpdatesInFlight) {
